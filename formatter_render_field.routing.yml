@@ -1,0 +1,7 @@
+formatter_render_field.settings_form:
+  path: '/admin/config/system/formatter-render-field'
+  defaults:
+    _title: 'formatter_render_field settings'
+    _form: 'Drupal\formatter_render_field\Form\SettingsForm'
+  requirements:
+    _permission: 'administer formatter_render_field configuration'

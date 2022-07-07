@@ -1,0 +1,119 @@
+<?php
+use Drupal\Core\Render\Element;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Field\FormatterInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
+
+/**
+ *
+ * @file
+ * Primary module hooks for formatter_render_field module.
+ *
+ * @DCG
+ * This file is no longer required in Drupal 8.
+ * @see https://www.drupal.org/node/2217931
+ */
+
+/**
+ * Implements hook_field_formatter_third_party_settings_form().
+ */
+function formatter_render_field_field_formatter_third_party_settings_form(FormatterInterface $plugin, FieldDefinitionInterface $field_definition, $view_mode, array $form, FormStateInterface $form_state) {
+  $settings = $plugin->getThirdPartySettings('formatter_render_field');
+  $element = [];
+  if ($plugin->getPluginId() == 'link') {
+    return $element;
+  }
+  $element['linked'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Link this field'),
+    '#default_value' => $settings['linked']
+  ];
+  
+  $element['url'] = [
+    '#type' => 'textfield',
+    '#title' => t('Link'),
+    '#default_value' => $settings['url'],
+    '#weight' => 1,
+    '#states' => [
+      'visible' => [
+        'input[name$="[third_party_settings][formatter_render_field][linked]"]' => [
+          'checked' => TRUE
+        ]
+      ]
+    ]
+  ];
+  if (\Drupal::moduleHandler()->moduleExists('token')) {
+    $element['token'] = [
+      '#type' => 'item',
+      '#theme' => 'token_tree_link',
+      '#token_types' => 'all',
+      '#weight' => 10,
+      '#states' => [
+        'visible' => [
+          'input[name$="[third_party_settings][formatter_render_field][linked]"]' => [
+            'checked' => TRUE
+          ]
+        ]
+      ]
+    ];
+  }
+  
+  return $element;
+}
+
+/**
+ * Implements hook_entity_display_build_alter().
+ *
+ * @param array $build
+ * @param array $context
+ */
+function formatter_render_field_entity_display_build_alter(array &$build, array $context) {
+  /** @var \Drupal\formatter_render_field\Services\GenerateLink $manager */
+  $manager = \Drupal::service('formatter_render_field.generatelink');
+  
+  // on recupere les champs present dans le build.
+  foreach (Element::children($build) as $field_name) {
+    // Cela permet de retourner les modifs $element dans le build.
+    $element = &$build[$field_name];
+    $settings = $manager->getFieldDisplaySettings($context['display'], $field_name);
+    // Continue to next if no Linked Field settings were found.
+    if (!count($settings)) {
+      continue;
+    }
+    //
+    if (empty($settings['url'])) {
+      continue;
+    }
+    //
+    if (isset($element['#entity_type']) && isset($element['#object'])) {
+      $replace_tokens = [
+        $element['#entity_type'] => $element['#object']
+      ];
+    }
+    else {
+      $replace_tokens = [];
+    }
+    //
+    $destination = $manager->replaceToken($settings['url'], $replace_tokens, [
+      'clear' => TRUE
+    ]);
+    $typeLink = 'internal:';
+    if (!(strpos($destination, 'http') === false)) {
+      $typeLink = '';
+    }
+    $options = [];
+    /**
+     * On recupere les differents rendu et on ajoute l'url par dessus.
+     */
+    foreach (Element::children($element) as $delta) {
+      $element[$delta] = [
+        '#type' => 'link',
+        '#title' => \Drupal::service('renderer')->render($element[$delta]),
+        '#url' => \Drupal\Core\Url::fromUri($typeLink . $destination, $options),
+        '#attributes' => [
+          'class' => []
+        ]
+      ];
+    }
+  }
+}

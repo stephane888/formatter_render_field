@@ -1,0 +1,6 @@
+formatter_render_field.settings_form:
+  title: formatter_render_field
+  description: Configure formatter_render_field.
+  parent: system.admin_config_system
+  route_name: formatter_render_field.settings_form
+  weight: 10

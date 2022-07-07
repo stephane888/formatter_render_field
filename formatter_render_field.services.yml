@@ -1,0 +1,4 @@
+services:
+  formatter_render_field.generatelink:
+    class: Drupal\formatter_render_field\Services\GenerateLink
+    arguments: ['@token']
