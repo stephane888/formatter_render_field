@@ -3,6 +3,7 @@ use Drupal\Core\Render\Element;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FormatterInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Component\Utility\NestedArray;
 
 /**
  *
@@ -19,6 +20,10 @@ use Drupal\Core\Field\FieldDefinitionInterface;
  */
 function formatter_render_field_field_formatter_third_party_settings_form(FormatterInterface $plugin, FieldDefinitionInterface $field_definition, $view_mode, array $form, FormStateInterface $form_state) {
   $settings = $plugin->getThirdPartySettings('formatter_render_field');
+  $settings = NestedArray::mergeDeep([
+    'linked' => 0,
+    'url' => ''
+  ], $settings);
   $element = [];
   if ($plugin->getPluginId() == 'link') {
     return $element;
