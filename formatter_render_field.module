@@ -47,6 +47,12 @@ function formatter_render_field_field_formatter_third_party_settings_form(Format
       ]
     ]
   ];
+
+  $element['class_css'] = [
+    '#type' => 'textfield',
+    '#title' => t('Class css'),
+    '#default_value' => $settings['class_css'] ?? '',
+  ];
   if (\Drupal::moduleHandler()->moduleExists('token')) {
     $element['token'] = [
       '#type' => 'item',
@@ -116,7 +122,7 @@ function formatter_render_field_entity_display_build_alter(array &$build, array 
         '#title' => \Drupal::service('renderer')->render($element[$delta]),
         '#url' => \Drupal\Core\Url::fromUri($typeLink . $destination, $options),
         '#attributes' => [
-          'class' => []
+          'class' => [$settings['class_css']]
         ]
       ];
     }
