@@ -2,5 +2,4 @@ name: formatter_render_field
 type: module
 description: permet de formatter un champs, en ajoutant des données de configuration et en modifiant son affichage
 package: Custom
-core: 8.x
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^9 || ^10
