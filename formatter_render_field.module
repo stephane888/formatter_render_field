@@ -51,14 +51,23 @@ function formatter_render_field_field_formatter_third_party_settings_form(Format
   $element['class_css'] = [
     '#type' => 'textfield',
     '#title' => t('Class css'),
-    '#default_value' => $settings['class_css'] ?? ''
+    '#default_value' => $settings['class_css'] ?? '',
+    '#weight' => 2,
+    '#states' => [
+      'visible' => [
+        'input[name$="[third_party_settings][formatter_render_field][linked]"]' => [
+          'checked' => TRUE
+        ]
+      ]
+    ]
   ];
-  if (\Drupal::moduleHandler()->moduleExists('token')) {
+  // Le module token est definit et on a pas un autre explorateur de token.
+  if (\Drupal::moduleHandler()->moduleExists('token') && !isset($form['form_token'])) {
     $element['token'] = [
       '#type' => 'item',
       '#theme' => 'token_tree_link',
       '#token_types' => 'all',
-      '#weight' => 10,
+      '#weight' => 0,
       '#states' => [
         'visible' => [
           'input[name$="[third_party_settings][formatter_render_field][linked]"]' => [
@@ -68,7 +77,6 @@ function formatter_render_field_field_formatter_third_party_settings_form(Format
       ]
     ];
   }
-  
   return $element;
 }
 
