@@ -1,4 +1,5 @@
 <?php
+
 use Drupal\Core\Render\Element;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FormatterInterface;
@@ -33,7 +34,7 @@ function formatter_render_field_field_formatter_third_party_settings_form(Format
     '#title' => t('Link this field'),
     '#default_value' => $settings['linked']
   ];
-  
+
   $element['url'] = [
     '#type' => 'textfield',
     '#title' => t('Link'),
@@ -47,7 +48,21 @@ function formatter_render_field_field_formatter_third_party_settings_form(Format
       ]
     ]
   ];
-  
+
+  $element['link_label'] = [
+    '#type' => 'textfield',
+    '#title' => t('Label of the link'),
+    '#default_value' => $settings['link_label'],
+    '#weight' => 1,
+    '#states' => [
+      'visible' => [
+        'input[name$="[third_party_settings][formatter_render_field][linked]"]' => [
+          'checked' => TRUE
+        ]
+      ]
+    ]
+  ];
+
   $element['class_css'] = [
     '#type' => 'textfield',
     '#title' => t('Class css'),
@@ -89,7 +104,7 @@ function formatter_render_field_field_formatter_third_party_settings_form(Format
 function formatter_render_field_entity_display_build_alter(array &$build, array $context) {
   /** @var \Drupal\formatter_render_field\Services\GenerateLink $manager */
   $manager = \Drupal::service('formatter_render_field.generatelink');
-  
+
   // on recupere les champs present dans le build.
   foreach (Element::children($build) as $field_name) {
     // Cela permet de retourner les modifs $element dans le build.
@@ -111,8 +126,7 @@ function formatter_render_field_entity_display_build_alter(array &$build, array 
       $replace_tokens = [
         $element['#entity_type'] => $element['#object']
       ];
-    }
-    else {
+    } else {
       $replace_tokens = [];
     }
     //
@@ -130,7 +144,7 @@ function formatter_render_field_entity_display_build_alter(array &$build, array 
     foreach (Element::children($element) as $delta) {
       $element[$delta] = [
         '#type' => 'link',
-        '#title' => \Drupal::service('renderer')->render($element[$delta]),
+        '#title' => $settings["link_label"] ?? \Drupal::service('renderer')->render($element[$delta]),
         '#url' => \Drupal\Core\Url::fromUri($typeLink . $destination, $options),
         '#attributes' => [
           'class' => [
