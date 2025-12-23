@@ -4,6 +4,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FormatterInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Component\Utility\NestedArray;
+use Drupal\Core\Render\Markup;
 
 /**
  *
@@ -23,7 +24,9 @@ function formatter_render_field_field_formatter_third_party_settings_form(Format
   $settings = NestedArray::mergeDeep([
     'linked' => 0,
     'url' => '',
-    'link_label' => ''
+    'link_label' => '',
+    'link_icon' => '',
+    'class_css' => ''
   ], $settings);
   $element = [];
   if ($plugin->getPluginId() == 'link') {
@@ -50,8 +53,8 @@ function formatter_render_field_field_formatter_third_party_settings_form(Format
   ];
   
   $element['link_label'] = [
-    '#type' => 'textfield',
-    '#title' => t('Label of the link'),
+    '#type' => 'textarea',
+    '#title' => t('Text'),
     '#default_value' => $settings['link_label'],
     '#weight' => 1,
     '#states' => [
@@ -68,6 +71,7 @@ function formatter_render_field_field_formatter_third_party_settings_form(Format
     '#title' => t('Class css'),
     '#default_value' => $settings['class_css'] ?? '',
     '#weight' => 2,
+    '#maxlength' => 255,
     '#states' => [
       'visible' => [
         'input[name$="[third_party_settings][formatter_render_field][linked]"]' => [
@@ -92,6 +96,7 @@ function formatter_render_field_field_formatter_third_party_settings_form(Format
       ]
     ];
   }
+  
   return $element;
 }
 
@@ -143,9 +148,11 @@ function formatter_render_field_entity_display_build_alter(array &$build, array 
      * On recupere les differents rendu et on ajoute l'url par dessus.
      */
     foreach (Element::children($element) as $delta) {
+      
       $element[$delta] = [
         '#type' => 'link',
-        '#title' => $settings["link_label"] ?? \Drupal::service('renderer')->render($element[$delta]),
+        '#title' => $settings["link_label"] ? Markup::create($settings["link_label"]) : \Drupal::service('renderer')->render($element[$delta]),
+        // '#title'=>['#markup'=>$settings["link_label"]??\Drupal::service('renderer')->render($element[$delta])],
         '#url' => \Drupal\Core\Url::fromUri($typeLink . $destination, $options),
         '#attributes' => [
           'class' => [
